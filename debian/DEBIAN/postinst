@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Start to install..."
+exit 0
