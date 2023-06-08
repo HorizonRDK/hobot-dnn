@@ -1,16 +1,23 @@
-// Copyright (c) 2021 Horizon Robotics.All Rights Reserved.
+// Copyright (c) [2021-2023] [Horizon Robotics].
 //
-// The material in this file is confidential and contains trade secrets
-// of Horizon Robotics Inc. This is proprietary information owned by
-// Horizon Robotics Inc. No part of this work may be disclosed,
-// reproduced, copied, transmitted, or used in any way for any purpose,
-// without the express written permission of Horizon Robotics Inc.
+// You can use this software according to the terms and conditions of
+// the Apache v2.0.
+// You may obtain a copy of Apache v2.0. at:
+//
+//     http: //www.apache.org/licenses/LICENSE-2.0
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+// See Apache v2.0 for more details.
 
 #ifndef _EASY_DNN_MODEL_IMPL_H_
 #define _EASY_DNN_MODEL_IMPL_H_
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "data_structure.h"
 #include "dnn/hb_dnn.h"
 
 namespace hobot {
@@ -61,7 +68,7 @@ class Model {
 
   /**
    * Get input description
-   * @param[out] input_desc
+   * @param[out] input_desc, description for input, only string
    * @param[in] input_index
    * @return 0 if success, return defined error code otherwise
    */
@@ -70,8 +77,21 @@ class Model {
 
   /**
    * Get input description
+   * @param[out] input_desc, description for input
+   * @param[out] size, description size
+   * @param[out] type, can be string(1) or binary(2)
+   * @param[in] input_index
+   * @return 0 if success, return defined error code otherwise
+   */
+  virtual int32_t GetInputDescription(const char** input_desc,
+                                      uint32_t& size,
+                                      int32_t& type,
+                                      int32_t input_index) = 0;
+
+  /**
+   * Get input description
    * @param[out] input_desc
-   * @param[in] input_input
+   * @param[in] input_index
    * @return 0 if success, return defined error code otherwise
    */
   virtual int32_t GetInputDescription(
@@ -131,11 +151,24 @@ class Model {
 
   /**
    * Get output description
-   * @param[out] output_desc
+   * @param[out] output_desc, description for output, only string
    * @param[in] output_index
    * @return 0 if success, return defined error code otherwise
    */
   virtual int32_t GetOutputDescription(std::string& output_desc,
+                                       int32_t output_index) = 0;
+
+  /**
+   * Get input description
+   * @param[out] output_desc, description for output
+   * @param[out] size, description size
+   * @param[out] type, can be string(1) or binary(2)
+   * @param[in] output_index
+   * @return 0 if success, return defined error code otherwise
+   */
+  virtual int32_t GetOutputDescription(const char** output_desc,
+                                       uint32_t& size,
+                                       int32_t& type,
                                        int32_t output_index) = 0;
 
   /**
@@ -189,20 +222,37 @@ class Model {
    * @param[in] output_index
    * @return 0 if success, return defined error code otherwise
    */
-  virtual int32_t GetOutputOperatorType(int& type, int32_t output_index) = 0;
+  virtual int32_t GetOutputOperatorType(int32_t& type,
+                                        int32_t output_index) = 0;
 
   /**
    * Get model estimate execute latency, it's real-time calculated based
    *  on historical statistics
-   * @return the model estimate execute latency
+   *  @param[out] estimate_latency
+   * @return 0 if success, return defined error code otherwise
    */
-  virtual int32_t GetEstimateLatency() = 0;
+  virtual int32_t GetEstimateLatency(int32_t& estimate_latency) = 0;
 
   /**
    * Get model tag
+   * @param[out] tag
    * @return 0 if success, return defined error code otherwise
    */
   virtual int32_t GetTag(const char** tag) = 0;
+
+  /**
+   * Get model profiler
+   * @param[out] profiler
+   * @return 0 if success, return defined error code otherwise
+   */
+  virtual int32_t GetProfiler(Profiler& profiler) = 0;
+
+  /**
+   * Load Output Parser Plugin from file
+   * @param[in] plugin_path
+   * @return 0 if success, return defined error code otherwise
+   */
+  virtual int32_t LoadOutputParserPlugin(std::string const& plugin_path) = 0;
 
   virtual ~Model() = default;
 };

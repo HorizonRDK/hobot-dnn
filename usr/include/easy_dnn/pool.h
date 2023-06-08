@@ -1,10 +1,15 @@
-// Copyright (c) 2021 Horizon Robotics.All Rights Reserved.
+// Copyright (c) [2021-2023] [Horizon Robotics].
 //
-// The material in this file is confidential and contains trade secrets
-// of Horizon Robotics Inc. This is proprietary information owned by
-// Horizon Robotics Inc. No part of this work may be disclosed,
-// reproduced, copied, transmitted, or used in any way for any purpose,
-// without the express written permission of Horizon Robotics Inc.
+// You can use this software according to the terms and conditions of
+// the Apache v2.0.
+// You may obtain a copy of Apache v2.0. at:
+//
+//     http: //www.apache.org/licenses/LICENSE-2.0
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+// See Apache v2.0 for more details.
 
 #ifndef _MSG_POOL_H_
 #define _MSG_POOL_H_
@@ -32,8 +37,8 @@ class Pool {
    * @return pool instance
    */
   template <typename... Args>
-  static std::shared_ptr<Pool<T>> Create(int pre_alloc_cnt,
-                                         int max_alloc_cnt,
+  static std::shared_ptr<Pool<T>> Create(int32_t pre_alloc_cnt,
+                                         int32_t max_alloc_cnt,
                                          Args &&... args) {
     auto *pool = new Pool<T>();
     pool->Init(pre_alloc_cnt, max_alloc_cnt, std::forward<Args>(args)...);
@@ -45,7 +50,7 @@ class Pool {
    * @return item if pool not empty, null otherwise
    */
   T *Get() {
-    std::lock_guard<std::mutex> lck(mutex_);
+    std::lock_guard<std::mutex> lck{mutex_};
     if (free_list_.empty()) {
       return nullptr;
     }
@@ -59,8 +64,8 @@ class Pool {
    * @param[in] timeout
    * @return item if pool not empty, null otherwise
    */
-  T *Get(int timeout) {
-    std::unique_lock<std::mutex> lck(mutex_);
+  T *Get(int32_t timeout) {
+    std::unique_lock<std::mutex> lck{mutex_};
     if (timeout > 0) {
       cv_.wait_for(lck, std::chrono::milliseconds(timeout), [this] {
         return !this->free_list_.empty();
@@ -87,8 +92,8 @@ class Pool {
    * @return item if success, null otherwise
    */
   template <typename... Args>
-  T *GetEx(int timeout, Args &&... args) {
-    std::unique_lock<std::mutex> lck(mutex_);
+  T *GetEx(int32_t timeout, Args &&... args) {
+    std::unique_lock<std::mutex> lck{mutex_};
     if (free_list_.empty() && items_.size() < max_alloc_cnt_) {
       AllocItem(std::forward<Args>(args)...);
     }
@@ -121,7 +126,7 @@ class Pool {
    * @param[in] timeout
    * @return std::shared_ptr<T>
    */
-  std::shared_ptr<T> GetSharedPtr(int timeout) {
+  std::shared_ptr<T> GetSharedPtr(int32_t timeout) {
     return WrapItem(Get(timeout), true);
   }
 
@@ -132,7 +137,7 @@ class Pool {
    * @return std::shared_ptr<T>
    */
   template <typename... Args>
-  std::shared_ptr<T> GetSharedPtrEx(int timeout, Args &&... args) {
+  std::shared_ptr<T> GetSharedPtrEx(int32_t timeout, Args &&... args) {
     return WrapItem(GetEx(timeout, std::forward<Args>(args)...), true);
   }
 
@@ -141,8 +146,8 @@ class Pool {
    *    and surplus items will be destroyed immediately if available
    * @param[in] max_alloc_cnt
    */
-  void Resize(int max_alloc_cnt) {
-    std::lock_guard<std::mutex> lck(mutex_);
+  void Resize(int32_t max_alloc_cnt) {
+    std::lock_guard<std::mutex> lck{mutex_};
     max_alloc_cnt_ = max_alloc_cnt <= 0 ? INT32_MAX : max_alloc_cnt;
     while (items_.size() > max_alloc_cnt_ && !free_list_.empty()) {
       auto item = free_list_.front();
@@ -158,7 +163,7 @@ class Pool {
   void Release(T *item) {
     item->Reset();
     {
-      std::unique_lock<std::mutex> lck(mutex_);
+      std::unique_lock<std::mutex> lck{mutex_};
       if (items_.size() > max_alloc_cnt_) {
         // destroy surplus item
         Remove(item);
@@ -170,7 +175,7 @@ class Pool {
   }
 
   ~Pool() {
-    std::lock_guard<std::mutex> lck(mutex_);
+    std::lock_guard<std::mutex> lck{mutex_};
     for (auto *item : items_) {
       delete item;
     }
@@ -190,9 +195,10 @@ class Pool {
    * @return 0
    */
   template <typename... Args>
-  int Init(int pre_alloc_cnt, int max_alloc_cnt, Args &&... args) {
+  int32_t Init(int32_t pre_alloc_cnt, int32_t max_alloc_cnt, Args &&... args) {
     max_alloc_cnt_ = max_alloc_cnt <= 0 ? INT32_MAX : max_alloc_cnt;
-    for (int i = 0; i < std::min(pre_alloc_cnt, (int32_t)max_alloc_cnt_); i++) {
+    for (int32_t i = 0; i < std::min(pre_alloc_cnt, (int32_t)max_alloc_cnt_);
+         i++) {
       AllocItem(std::forward<Args>(args)...);
     }
     return 0;
@@ -205,7 +211,7 @@ class Pool {
   }
 
   template <typename... Args>
-  int AllocItem(Args &&... args) {
+  int32_t AllocItem(Args &&... args) {
     T *item = new T(std::forward<Args>(args)...);
     items_.push_back(item);
     free_list_.push(item);

@@ -1,10 +1,15 @@
-// Copyright (c) 2021 Horizon Robotics.All Rights Reserved.
+// Copyright (c) [2021-2023] [Horizon Robotics].
 //
-// The material in this file is confidential and contains trade secrets
-// of Horizon Robotics Inc. This is proprietary information owned by
-// Horizon Robotics Inc. No part of this work may be disclosed,
-// reproduced, copied, transmitted, or used in any way for any purpose,
-// without the express written permission of Horizon Robotics Inc.
+// You can use this software according to the terms and conditions of
+// the Apache v2.0.
+// You may obtain a copy of Apache v2.0. at:
+//
+//     http: //www.apache.org/licenses/LICENSE-2.0
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+// See Apache v2.0 for more details.
 
 #ifndef _EASY_DNN_INPUT_PROCESS_CROP_H_
 #define _EASY_DNN_INPUT_PROCESS_CROP_H_
@@ -40,22 +45,22 @@ namespace easy_dnn {
 class CropDescription : public InputDescription {
  public:
   CropDescription(Model* model,
-                  int index,
+                  int32_t index,
                   std::string type = "",
-                  int x = 0,
-                  int y = 0,
-                  int width = 0,
-                  int height = 0)
+                  int32_t x = 0,
+                  int32_t y = 0,
+                  int32_t width = 0,
+                  int32_t height = 0)
       : InputDescription(model, index, type),
         x(x),
         y(y),
         width(width),
         height(height) {}
 
-  int x;
-  int y;
-  int width;   // 0 means crop to the right edge [x,...]
-  int height;  // 0 means crop to the bottom edge [y, ...]
+  int32_t x;
+  int32_t y;
+  int32_t width;   // 0 means crop to the right edge [x,...]
+  int32_t height;  // 0 means crop to the bottom edge [y, ...]
 
   friend std::ostream& operator<<(std::ostream& os, CropDescription* desc) {
     os << "CropDescription: x=" << desc->x << ", y=" << desc->y

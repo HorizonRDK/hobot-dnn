@@ -1,10 +1,15 @@
-// Copyright (c) 2021 Horizon Robotics.All Rights Reserved.
+// Copyright (c) [2021-2023] [Horizon Robotics].
 //
-// The material in this file is confidential and contains trade secrets
-// of Horizon Robotics Inc. This is proprietary information owned by
-// Horizon Robotics Inc. No part of this work may be disclosed,
-// reproduced, copied, transmitted, or used in any way for any purpose,
-// without the express written permission of Horizon Robotics Inc.
+// You can use this software according to the terms and conditions of
+// the Apache v2.0.
+// You may obtain a copy of Apache v2.0. at:
+//
+//     http: //www.apache.org/licenses/LICENSE-2.0
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+// See Apache v2.0 for more details.
 
 #ifndef _EASY_DNN_STATUS_H_
 #define _EASY_DNN_STATUS_H_
@@ -33,6 +38,8 @@ typedef enum {
   DNN_PROCESS_INPUT_FAILED = -6000256,
   DNN_PARSE_OUTPUT_FAILED = -6000257,
   DNN_INPUTS_INVALID = -6000258,
+  DNN_INVALID_PLUGIN = -6000259,
+  DNN_OUTPUTS_INVALID = -6000260,
 } DNNStatus;
 
 }  // namespace easy_dnn

@@ -159,9 +159,9 @@ class NDArray {
 
   TShape shape_;
 
-  TypeFlag dtype_ = TypeFlag::kUnused;
+  TypeFlag dtype_{TypeFlag::kUnused};
 
-  size_t offset_ = 0;
+  size_t offset_{0U};
 };  // class NDArray
 }  // namespace dnn
 }  // namespace hobot

@@ -16,8 +16,8 @@ extern "C" {
 #endif  // __cplusplus
 
 #define HB_DNN_VERSION_MAJOR 1U
-#define HB_DNN_VERSION_MINOR 9U
-#define HB_DNN_VERSION_PATCH 7U
+#define HB_DNN_VERSION_MINOR 18U
+#define HB_DNN_VERSION_PATCH 4U
 
 #define HB_DNN_TENSOR_MAX_DIMENSIONS 8
 
@@ -26,11 +26,10 @@ extern "C" {
     (param)->bpuCoreId = HB_BPU_CORE_ANY;         \
     (param)->dspCoreId = HB_DSP_CORE_ANY;         \
     (param)->priority = HB_DNN_PRIORITY_LOWEST;   \
+    (param)->more = false;                        \
+    (param)->customId = 0;                        \
     (param)->reserved1 = 0;                       \
     (param)->reserved2 = 0;                       \
-    (param)->reserved3 = 0;                       \
-    (param)->reserved4 = 0;                       \
-    (param)->more = false;                        \
   }
 
 #define HB_DNN_INITIALIZE_RESIZE_CTRL_PARAM(param)     \
@@ -119,7 +118,9 @@ typedef struct {
   hbDNNQuantiShift shift;
   hbDNNQuantiScale scale;
   hbDNNQuantiType quantiType;
+  int32_t quantizeAxis;
   int32_t alignedByteSize;
+  int32_t stride[HB_DNN_TENSOR_MAX_DIMENSIONS];
 } hbDNNTensorProperties;
 
 typedef struct {
@@ -145,10 +146,9 @@ typedef struct {
   int32_t dspCoreId;
   int32_t priority;
   int32_t more;
+  int64_t customId;
   int32_t reserved1;
   int32_t reserved2;
-  int32_t reserved3;
-  int32_t reserved4;
 } hbDNNInferCtrlParam;
 
 typedef enum {
@@ -164,6 +164,9 @@ typedef struct {
   int32_t reserved3;
   int32_t reserved4;
 } hbDNNResizeCtrlParam;
+
+typedef void (*hbDNNTaskDoneCb)(hbDNNTaskHandle_t taskHandle, int32_t status,
+                                void *userdata);
 
 /**
  * Get DNN version
@@ -299,11 +302,13 @@ int32_t hbDNNInfer(hbDNNTaskHandle_t *taskHandle, hbDNNTensor **output,
  * DNN inference with rois
  * @param[out] taskHandle: return a pointer represent the task if success,  otherwise nullptr
  * @param[in] dnnHandle: pointer to the dnn handle
- * @param[in] input: input tensor array, the size of array should be equal to  $(`hbDNNGetInputCount`) * roiCount
+ * @param[in] input: input tensor array, the size of array should be equal to  $(`hbDNNGetInputCount`) * `batch`
  *      range of [idx*$(`hbDNNGetInputCount`), (idx+1)*$(`hbDNNGetInputCount`)) represents input tensors
- *      for roi[idx].
- * @param[in] rois: Rois
- * @param[in] roiCount: roi count
+ *      for idxth batch. 
+ * @param[in] rois: Rois. the size of array should be equal to roiCount. 
+ *      Assuming that the model has the input of n resizer input sources, range of [idx*n, (idx+1)*n) represents 
+ *      rois for idxth batch.
+ * @param[in] roiCount: roi count. If the model has n resizer input sources, then roiCount=`batch` * n.
  * @param[in] output: pointer to the output tensor array
  * @param[in] inferCtrlParam: infer control parameters
  * @return 0 if success, return defined error code otherwise
@@ -325,6 +330,16 @@ int32_t hbDNNRoiInfer(hbDNNTaskHandle_t *taskHandle, hbDNNTensor **output,
 int32_t hbDNNResize(hbDNNTaskHandle_t *taskHandle, hbDNNTensor *output,
                     hbDNNTensor const *input, hbDNNRoi const *roi,
                     hbDNNResizeCtrlParam *resizeCtrlParam);
+
+/**
+ * DNN set task done callback
+ * @param[in] taskHandle: pointer to the task
+ * @param[in] cb: callback function
+ * @param[in] userdata: userdata 
+ * @return 0 if success, return defined error code otherwise
+*/
+int32_t hbDNNSetTaskDoneCb(hbDNNTaskHandle_t taskHandle, hbDNNTaskDoneCb cb,
+                           void *userdata);
 
 /**
  * Wait util task completed or timeout.

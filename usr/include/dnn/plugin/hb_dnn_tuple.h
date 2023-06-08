@@ -44,7 +44,7 @@ class Tuple {
    * Move constructor from Tuple
    * @param[in] src the source shape
    */
-  inline Tuple(Tuple<ValueType> &&src) noexcept { this->swap(src); }
+  inline Tuple(Tuple<ValueType> &&src) noexcept { this->Swap(src); }
 
   /**
    * Construct the Tuple from content of iterator
@@ -131,14 +131,14 @@ class Tuple {
    * @return the begin data pointer to content of the tuple
    */
   inline const ValueType *Begin() const {
-    return ndim_ <= kStackCache ? stack_data_ : heap_data_;
+    return (ndim_ <= kStackCache) ? stack_data_ : heap_data_;
   }
 
   /**
    * @return the begin data pointer to content of the tuple
    */
   inline ValueType *Begin() {
-    return ndim_ <= kStackCache ? stack_data_ : heap_data_;
+    return (ndim_ <= kStackCache) ? stack_data_ : heap_data_;
   }
 
   /**
@@ -178,6 +178,8 @@ class Tuple {
       heap_data_ = new ValueType[static_cast<size_t>(capacity_)];
     } else if (dim <= kStackCache) {
       capacity_ = kStackCache;
+    } else {
+      // do nothing
     }
     ndim_ = dim;
   }
@@ -242,7 +244,9 @@ class TShape : public Tuple<uint32_t> {
    * @return reference of self
    */
   inline TShape &operator=(const TShape &src) & {
-    if (this == &src) return *this;
+    if (this == &src) {
+      return *this;
+    }
     this->Assign(src.Begin(), src.End());
     return *this;
   }
@@ -332,9 +336,9 @@ class TShape : public Tuple<uint32_t> {
    * @return product size in [start, end)
    */
   inline uint32_t ProdSize(uint32_t begin, uint32_t end) const {
-    uint32_t size = 1U;
+    uint32_t size{1U};
     auto *data = Begin();
-    for (uint32_t i = begin; i < end; ++i) {
+    for (uint32_t i{begin}; i < end; ++i) {
       size *= data[i];
     }
     return size;
