@@ -1,4 +1,4 @@
 #!/bin/bash
 
-echo "Start to install..."
+ldconfig
 exit 0
